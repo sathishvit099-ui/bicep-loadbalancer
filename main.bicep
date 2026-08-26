@@ -1,7 +1,11 @@
 targetScope = 'subscription'
 
+//===================================================
+// GENERAL
+//===================================================
+
 param resourceGroupName string
-param location string = 'centralus'
+param location string
 param tags object
 
 //===================================================
@@ -22,25 +26,78 @@ param backendSubnetPrefix string
 //===================================================
 
 param appGatewayNsgName string
+param appGatewayNsgRules array
+
 param backendNsgName string
+param backendNsgRules array
 
 //===================================================
-// Load Balancer
+// PUBLIC IP
+//===================================================
+
+param applicationGatewayPublicIpName string
+param publicIpSku string
+param publicIpAllocationMethod string
+
+//===================================================
+// LOAD BALANCER
 //===================================================
 
 param loadBalancerName string
+param loadBalancerSku string
+param loadBalancerFrontendName string
 param loadBalancerFrontendIp string
 
+param loadBalancerBackendPoolName string
+
+param loadBalancerProbeName string
+param loadBalancerProbeProtocol string
+param loadBalancerProbePort int
+param loadBalancerProbeRequestPath string
+param loadBalancerProbeIntervalInSeconds int
+param loadBalancerProbeNumberOfProbes int
+
+param loadBalancerRuleName string
+param loadBalancerFrontendPort int
+param loadBalancerBackendPort int
+param loadBalancerRuleProtocol string
+param loadBalancerIdleTimeoutInMinutes int
+param loadBalancerEnableFloatingIp bool
+param loadBalancerEnableTcpReset bool
+
 //===================================================
-// Application Gateway
+// APPLICATION GATEWAY
 //===================================================
 
 param applicationGatewayName string
-param applicationGatewayPublicIpName string
+param applicationGatewaySkuName string
+param applicationGatewaySkuTier string
+param applicationGatewayCapacity int
+
+param applicationGatewayGatewayIpConfigName string
+
+param applicationGatewayFrontendIpConfigName string
+param applicationGatewayFrontendPortName string
+param applicationGatewayFrontendPort int
+
+param applicationGatewayBackendPoolName string
+
+param applicationGatewayBackendHttpSettingsName string
+param applicationGatewayBackendPort int
+param applicationGatewayBackendProtocol string
+param applicationGatewayCookieBasedAffinity string
+param applicationGatewayRequestTimeout int
+
+param applicationGatewayHttpListenerName string
+param applicationGatewayListenerProtocol string
+
+param applicationGatewayRoutingRuleName string
+param applicationGatewayRoutingRuleType string
+param applicationGatewayRoutingRulePriority int
 
 
 //===================================================
-// Resource Group
+// RESOURCE GROUP
 //===================================================
 
 module rg './modules/resourceGroup.bicep' = {
@@ -57,7 +114,7 @@ module rg './modules/resourceGroup.bicep' = {
 
 
 //===================================================
-// Application Gateway NSG
+// APPLICATION GATEWAY NSG
 //===================================================
 
 module appGatewayNsg './modules/nsg.bicep' = {
@@ -72,42 +129,13 @@ module appGatewayNsg './modules/nsg.bicep' = {
   params: {
     nsgName: appGatewayNsgName
     location: location
-
-    securityRules: [
-      {
-        name: 'Allow-GatewayManager'
-        properties: {
-          priority: 100
-          access: 'Allow'
-          direction: 'Inbound'
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '65200-65535'
-          sourceAddressPrefix: 'GatewayManager'
-          destinationAddressPrefix: '*'
-        }
-      }
-
-      {
-        name: 'Allow-Internet-HTTP'
-        properties: {
-          priority: 110
-          access: 'Allow'
-          direction: 'Inbound'
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '80'
-          sourceAddressPrefix: 'Internet'
-          destinationAddressPrefix: '*'
-        }
-      }
-    ]
+    securityRules: appGatewayNsgRules
   }
 }
 
 
 //===================================================
-// Backend NSG
+// BACKEND NSG
 //===================================================
 
 module backendNsg './modules/nsg.bicep' = {
@@ -122,22 +150,7 @@ module backendNsg './modules/nsg.bicep' = {
   params: {
     nsgName: backendNsgName
     location: location
-
-    securityRules: [
-      {
-        name: 'Allow-HTTP-From-VNet'
-        properties: {
-          priority: 100
-          access: 'Allow'
-          direction: 'Inbound'
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '80'
-          sourceAddressPrefix: 'VirtualNetwork'
-          destinationAddressPrefix: '*'
-        }
-      }
-    ]
+    securityRules: backendNsgRules
   }
 }
 
@@ -176,7 +189,7 @@ module vnet './modules/vnet.bicep' = {
 
 
 //===================================================
-// Application Gateway Public IP
+// APPLICATION GATEWAY PUBLIC IP
 //===================================================
 
 module appGatewayPublicIp './modules/publicIp.bicep' = {
@@ -191,12 +204,15 @@ module appGatewayPublicIp './modules/publicIp.bicep' = {
   params: {
     publicIpName: applicationGatewayPublicIpName
     location: location
+
+    skuName: publicIpSku
+    allocationMethod: publicIpAllocationMethod
   }
 }
 
 
 //===================================================
-// Internal Standard Load Balancer
+// INTERNAL STANDARD LOAD BALANCER
 //===================================================
 
 module loadBalancer './modules/loadBalancer.bicep' = {
@@ -213,14 +229,34 @@ module loadBalancer './modules/loadBalancer.bicep' = {
     loadBalancerName: loadBalancerName
     location: location
 
+    skuName: loadBalancerSku
+
+    frontendName: loadBalancerFrontendName
     frontendPrivateIp: loadBalancerFrontendIp
     backendSubnetId: vnet.outputs.backendSubnetId
+
+    backendPoolName: loadBalancerBackendPoolName
+
+    probeName: loadBalancerProbeName
+    probeProtocol: loadBalancerProbeProtocol
+    probePort: loadBalancerProbePort
+    probeRequestPath: loadBalancerProbeRequestPath
+    probeIntervalInSeconds: loadBalancerProbeIntervalInSeconds
+    probeNumberOfProbes: loadBalancerProbeNumberOfProbes
+
+    ruleName: loadBalancerRuleName
+    frontendPort: loadBalancerFrontendPort
+    backendPort: loadBalancerBackendPort
+    ruleProtocol: loadBalancerRuleProtocol
+    idleTimeoutInMinutes: loadBalancerIdleTimeoutInMinutes
+    enableFloatingIp: loadBalancerEnableFloatingIp
+    enableTcpReset: loadBalancerEnableTcpReset
   }
 }
 
 
 //===================================================
-// Application Gateway Standard_v2
+// APPLICATION GATEWAY STANDARD_V2
 //===================================================
 
 module applicationGateway './modules/applicationGateway.bicep' = {
@@ -240,9 +276,33 @@ module applicationGateway './modules/applicationGateway.bicep' = {
     location: location
 
     subnetId: vnet.outputs.appGatewaySubnetId
-
     publicIpId: appGatewayPublicIp.outputs.publicIpId
 
     loadBalancerFrontendIp: loadBalancer.outputs.frontendIpAddress
+
+    skuName: applicationGatewaySkuName
+    skuTier: applicationGatewaySkuTier
+    skuCapacity: applicationGatewayCapacity
+
+    gatewayIpConfigName: applicationGatewayGatewayIpConfigName
+
+    frontendIpConfigName: applicationGatewayFrontendIpConfigName
+    frontendPortName: applicationGatewayFrontendPortName
+    frontendPort: applicationGatewayFrontendPort
+
+    backendPoolName: applicationGatewayBackendPoolName
+
+    backendHttpSettingsName: applicationGatewayBackendHttpSettingsName
+    backendPort: applicationGatewayBackendPort
+    backendProtocol: applicationGatewayBackendProtocol
+    cookieBasedAffinity: applicationGatewayCookieBasedAffinity
+    requestTimeout: applicationGatewayRequestTimeout
+
+    httpListenerName: applicationGatewayHttpListenerName
+    listenerProtocol: applicationGatewayListenerProtocol
+
+    routingRuleName: applicationGatewayRoutingRuleName
+    routingRuleType: applicationGatewayRoutingRuleType
+    routingRulePriority: applicationGatewayRoutingRulePriority
   }
 }

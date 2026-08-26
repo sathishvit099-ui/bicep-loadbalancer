@@ -6,34 +6,59 @@ param publicIpId string
 
 param loadBalancerFrontendIp string
 
+param skuName string
+param skuTier string
+param skuCapacity int
+
+param gatewayIpConfigName string
+
+param frontendIpConfigName string
+param frontendPortName string
+param frontendPort int
+
+param backendPoolName string
+
+param backendHttpSettingsName string
+param backendPort int
+param backendProtocol string
+param cookieBasedAffinity string
+param requestTimeout int
+
+param httpListenerName string
+param listenerProtocol string
+
+param routingRuleName string
+param routingRuleType string
+param routingRulePriority int
+
 var frontendIpConfigId = resourceId(
   'Microsoft.Network/applicationGateways/frontendIPConfigurations',
   applicationGatewayName,
-  'public-frontend'
+  frontendIpConfigName
 )
 
 var frontendPortId = resourceId(
   'Microsoft.Network/applicationGateways/frontendPorts',
   applicationGatewayName,
-  'http-port'
+  frontendPortName
 )
 
 var backendPoolId = resourceId(
   'Microsoft.Network/applicationGateways/backendAddressPools',
   applicationGatewayName,
-  'load-balancer-pool'
+  backendPoolName
 )
 
 var backendHttpSettingsId = resourceId(
   'Microsoft.Network/applicationGateways/backendHttpSettingsCollection',
   applicationGatewayName,
-  'http-settings'
+  backendHttpSettingsName
 )
 
 var httpListenerId = resourceId(
   'Microsoft.Network/applicationGateways/httpListeners',
   applicationGatewayName,
-  'http-listener'
+  httpListenerName
 )
 
 resource appGateway 'Microsoft.Network/applicationGateways@2025-01-01' = {
@@ -43,14 +68,14 @@ resource appGateway 'Microsoft.Network/applicationGateways@2025-01-01' = {
   properties: {
 
     sku: {
-      name: 'Standard_v2'
-      tier: 'Standard_v2'
-      capacity: 2
+      name: skuName
+      tier: skuTier
+      capacity: skuCapacity
     }
 
     gatewayIPConfigurations: [
       {
-        name: 'appgw-ip-config'
+        name: gatewayIpConfigName
 
         properties: {
           subnet: {
@@ -62,7 +87,7 @@ resource appGateway 'Microsoft.Network/applicationGateways@2025-01-01' = {
 
     frontendIPConfigurations: [
       {
-        name: 'public-frontend'
+        name: frontendIpConfigName
 
         properties: {
           publicIPAddress: {
@@ -74,17 +99,17 @@ resource appGateway 'Microsoft.Network/applicationGateways@2025-01-01' = {
 
     frontendPorts: [
       {
-        name: 'http-port'
+        name: frontendPortName
 
         properties: {
-          port: 80
+          port: frontendPort
         }
       }
     ]
 
     backendAddressPools: [
       {
-        name: 'load-balancer-pool'
+        name: backendPoolName
 
         properties: {
           backendAddresses: [
@@ -98,20 +123,20 @@ resource appGateway 'Microsoft.Network/applicationGateways@2025-01-01' = {
 
     backendHttpSettingsCollection: [
       {
-        name: 'http-settings'
+        name: backendHttpSettingsName
 
         properties: {
-          port: 80
-          protocol: 'Http'
-          cookieBasedAffinity: 'Disabled'
-          requestTimeout: 30
+          port: backendPort
+          protocol: backendProtocol
+          cookieBasedAffinity: cookieBasedAffinity
+          requestTimeout: requestTimeout
         }
       }
     ]
 
     httpListeners: [
       {
-        name: 'http-listener'
+        name: httpListenerName
 
         properties: {
           frontendIPConfiguration: {
@@ -122,18 +147,18 @@ resource appGateway 'Microsoft.Network/applicationGateways@2025-01-01' = {
             id: frontendPortId
           }
 
-          protocol: 'Http'
+          protocol: listenerProtocol
         }
       }
     ]
 
     requestRoutingRules: [
       {
-        name: 'http-routing-rule'
+        name: routingRuleName
 
         properties: {
-          ruleType: 'Basic'
-          priority: 100
+          ruleType: routingRuleType
+          priority: routingRulePriority
 
           httpListener: {
             id: httpListenerId

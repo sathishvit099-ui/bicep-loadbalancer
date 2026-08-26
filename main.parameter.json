@@ -1,0 +1,265 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+
+  "parameters": {
+
+    "resourceGroupName": {
+      "value": "rg-appgateway-lb-centralus"
+    },
+
+    "location": {
+      "value": "centralus"
+    },
+
+    "tags": {
+      "value": {
+        "Environment": "Dev",
+        "Project": "ApplicationGateway-LoadBalancer",
+        "ManagedBy": "Bicep",
+        "Owner": "Infrastructure"
+      }
+    },
+
+    "vnetName": {
+      "value": "appgw-lb-vnet"
+    },
+
+    "addressSpace": {
+      "value": "10.10.0.0/16"
+    },
+
+    "appGatewaySubnetName": {
+      "value": "appgw-subnet"
+    },
+
+    "appGatewaySubnetPrefix": {
+      "value": "10.10.1.0/24"
+    },
+
+    "backendSubnetName": {
+      "value": "backend-subnet"
+    },
+
+    "backendSubnetPrefix": {
+      "value": "10.10.2.0/24"
+    },
+
+    "appGatewayNsgName": {
+      "value": "appgw-nsg"
+    },
+
+    "appGatewayNsgRules": {
+      "value": [
+        {
+          "name": "Allow-GatewayManager",
+          "properties": {
+            "priority": 100,
+            "access": "Allow",
+            "direction": "Inbound",
+            "protocol": "Tcp",
+            "sourcePortRange": "*",
+            "destinationPortRange": "65200-65535",
+            "sourceAddressPrefix": "GatewayManager",
+            "destinationAddressPrefix": "*"
+          }
+        },
+        {
+          "name": "Allow-Internet-HTTP",
+          "properties": {
+            "priority": 110,
+            "access": "Allow",
+            "direction": "Inbound",
+            "protocol": "Tcp",
+            "sourcePortRange": "*",
+            "destinationPortRange": "80",
+            "sourceAddressPrefix": "Internet",
+            "destinationAddressPrefix": "*"
+          }
+        }
+      ]
+    },
+
+    "backendNsgName": {
+      "value": "backend-nsg"
+    },
+
+    "backendNsgRules": {
+      "value": [
+        {
+          "name": "Allow-HTTP-From-VNet",
+          "properties": {
+            "priority": 100,
+            "access": "Allow",
+            "direction": "Inbound",
+            "protocol": "Tcp",
+            "sourcePortRange": "*",
+            "destinationPortRange": "80",
+            "sourceAddressPrefix": "VirtualNetwork",
+            "destinationAddressPrefix": "*"
+          }
+        }
+      ]
+    },
+
+    "applicationGatewayPublicIpName": {
+      "value": "appgw-pip"
+    },
+
+    "publicIpSku": {
+      "value": "Standard"
+    },
+
+    "publicIpAllocationMethod": {
+      "value": "Static"
+    },
+
+    "loadBalancerName": {
+      "value": "internal-lb"
+    },
+
+    "loadBalancerSku": {
+      "value": "Standard"
+    },
+
+    "loadBalancerFrontendName": {
+      "value": "internal-frontend"
+    },
+
+    "loadBalancerFrontendIp": {
+      "value": "10.10.2.10"
+    },
+
+    "loadBalancerBackendPoolName": {
+      "value": "backend-pool"
+    },
+
+    "loadBalancerProbeName": {
+      "value": "http-health-probe"
+    },
+
+    "loadBalancerProbeProtocol": {
+      "value": "Http"
+    },
+
+    "loadBalancerProbePort": {
+      "value": 80
+    },
+
+    "loadBalancerProbeRequestPath": {
+      "value": "/"
+    },
+
+    "loadBalancerProbeIntervalInSeconds": {
+      "value": 15
+    },
+
+    "loadBalancerProbeNumberOfProbes": {
+      "value": 2
+    },
+
+    "loadBalancerRuleName": {
+      "value": "http-rule"
+    },
+
+    "loadBalancerFrontendPort": {
+      "value": 80
+    },
+
+    "loadBalancerBackendPort": {
+      "value": 80
+    },
+
+    "loadBalancerRuleProtocol": {
+      "value": "Tcp"
+    },
+
+    "loadBalancerIdleTimeoutInMinutes": {
+      "value": 4
+    },
+
+    "loadBalancerEnableFloatingIp": {
+      "value": false
+    },
+
+    "loadBalancerEnableTcpReset": {
+      "value": true
+    },
+
+    "applicationGatewayName": {
+      "value": "appgw-standard-v2"
+    },
+
+    "applicationGatewaySkuName": {
+      "value": "Standard_v2"
+    },
+
+    "applicationGatewaySkuTier": {
+      "value": "Standard_v2"
+    },
+
+    "applicationGatewayCapacity": {
+      "value": 2
+    },
+
+    "applicationGatewayGatewayIpConfigName": {
+      "value": "appgw-ip-config"
+    },
+
+    "applicationGatewayFrontendIpConfigName": {
+      "value": "public-frontend"
+    },
+
+    "applicationGatewayFrontendPortName": {
+      "value": "http-port"
+    },
+
+    "applicationGatewayFrontendPort": {
+      "value": 80
+    },
+
+    "applicationGatewayBackendPoolName": {
+      "value": "load-balancer-pool"
+    },
+
+    "applicationGatewayBackendHttpSettingsName": {
+      "value": "http-settings"
+    },
+
+    "applicationGatewayBackendPort": {
+      "value": 80
+    },
+
+    "applicationGatewayBackendProtocol": {
+      "value": "Http"
+    },
+
+    "applicationGatewayCookieBasedAffinity": {
+      "value": "Disabled"
+    },
+
+    "applicationGatewayRequestTimeout": {
+      "value": 30
+    },
+
+    "applicationGatewayHttpListenerName": {
+      "value": "http-listener"
+    },
+
+    "applicationGatewayListenerProtocol": {
+      "value": "Http"
+    },
+
+    "applicationGatewayRoutingRuleName": {
+      "value": "http-routing-rule"
+    },
+
+    "applicationGatewayRoutingRuleType": {
+      "value": "Basic"
+    },
+
+    "applicationGatewayRoutingRulePriority": {
+      "value": 100
+    }
+  }
+}
